@@ -43,3 +43,9 @@ del _Expando
 
 class Par:
 	pass
+
+class COMP:
+	pass
+
+app = _Expando()
+app.name = ''
