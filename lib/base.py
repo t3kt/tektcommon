@@ -1,4 +1,5 @@
-print('common/base.py initializing')
+if 'td' in globals():
+	print('common/base.py initializing')
 
 try:
 	import common_util as util

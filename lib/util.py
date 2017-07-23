@@ -1,5 +1,5 @@
-print('common/util.py initializing')
-
+if 'td' in globals():
+	print('common/util.py initializing')
 
 if False:
 	try:
@@ -79,14 +79,15 @@ except ImportError:
 # 			return
 # 		print(text, file=self.buffer)
 
-def Log(msg):
+def Log(msg, file=None):
 	#logger.info('%s', msg)
-	print('[%s]' % datetime.datetime.now().strftime('%m.%d %H:%M:%S'), msg)
+	print('[%s]' % datetime.datetime.now().strftime('%m.%d %H:%M:%S'), msg, file=file)
 
 class IndentedLogger:
-	def __init__(self):
+	def __init__(self, outfile=None):
 		self._indentLevel = 0
 		self._indentStr = ''
+		self._outFile = outfile
 
 	def _AddIndent(self, amount):
 		self._indentLevel += amount
@@ -100,9 +101,9 @@ class IndentedLogger:
 
 	def LogEvent(self, path, opid, event):
 		if not path and not opid:
-			Log('%s %s' % (self._indentStr, event))
+			Log('%s %s' % (self._indentStr, event), file=self._outFile)
 		else:
-			Log('%s [%s] %s (%s)' % (self._indentStr, opid or '', event, path or ''))
+			Log('%s [%s] %s (%s)' % (self._indentStr, opid or '', event, path or ''), file=self._outFile)
 
 	def LogBegin(self, path, opid, event):
 		self.LogEvent(path, opid, event)
