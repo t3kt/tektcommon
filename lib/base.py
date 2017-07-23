@@ -55,4 +55,8 @@ class Extension:
 	def _LogEnd(self, event=None):
 		logger.LogEnd(self.comp.path, self._GetId(), event)
 
+	LogEvent = _LogEvent
+	LogBegin = _LogBegin
+	LogEnd = _LogEnd
+
 

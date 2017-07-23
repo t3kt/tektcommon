@@ -240,6 +240,8 @@ def MergeDicts(*dicts):
 	return out
 
 def ParseFloat(text, defaultVal=None):
+	if text is None or text == '':
+		return defaultVal
 	try:
 		return float(text)
 	except ValueError:
