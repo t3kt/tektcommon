@@ -1,15 +1,17 @@
 print('common/util.py initializing')
 
-try:
-	import td
-except ImportError:
+
+if False:
 	try:
-		from _stubs import td
+		import td
 	except ImportError:
 		try:
-			from common.lib._stubs import td
+			from _stubs import td
 		except ImportError:
-			td = object()
+			try:
+				from common.lib._stubs import td
+			except ImportError:
+				td = object()
 if False:
 	try:
 		from _stubs import op
@@ -80,6 +82,36 @@ except ImportError:
 def Log(msg):
 	#logger.info('%s', msg)
 	print('[%s]' % datetime.datetime.now().strftime('%m.%d %H:%M:%S'), msg)
+
+class IndentedLogger:
+	def __init__(self):
+		self._indentLevel = 0
+		self._indentStr = ''
+
+	def _AddIndent(self, amount):
+		self._indentLevel += amount
+		self._indentStr = '\t' * self._indentLevel
+
+	def Indent(self):
+		self._AddIndent(1)
+
+	def Unindent(self):
+		self._AddIndent(-1)
+
+	def LogEvent(self, path, opid, event):
+		if not path and not opid:
+			Log('%s %s' % (self._indentStr, event))
+		else:
+			Log('%s [%s] %s (%s)' % (self._indentStr, opid or '', event, path or ''))
+
+	def LogBegin(self, path, opid, event):
+		self.LogEvent(path, opid, event)
+		self.Indent()
+
+	def LogEnd(self, path, opid, event):
+		self.Unindent()
+		if event:
+			self.LogEvent(path, opid, event)
 
 def dumpobj(obj, underscores=False, methods=False):
 	print('Dump %r type: %r' % (obj, type(obj)))
