@@ -4,7 +4,10 @@ if 'td' in globals():
 try:
 	import common_util as util
 except ImportError:
-	import util
+	try:
+		import common.lib.util as util
+	except ImportError:
+		import util
 
 IndentedLogger = util.IndentedLogger
 
