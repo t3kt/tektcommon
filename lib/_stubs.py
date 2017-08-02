@@ -6,8 +6,9 @@ ui.panes.current = None
 ui.status = ''
 PaneType = object()
 PaneType.NETWORKEDITOR = None
-project = object()
-project.name = ''
+
+class project:
+	name = ''
 
 def op(path):
 	return object()
@@ -18,14 +19,18 @@ def ops(*paths):
 def var(name):
 	return ''
 
-td = object()
-
 class _TD_ERROR(Exception):
 	pass
 
-td.error = _TD_ERROR
+class td:
+	error = _TD_ERROR
 
 del _TD_ERROR
+
+class tdu:
+	@staticmethod
+	def legalName(s):
+		return s
 
 class _Expando:
 	def __init__(self):
@@ -47,5 +52,5 @@ class Par:
 class COMP:
 	pass
 
-app = _Expando()
-app.name = ''
+class app:
+	name = ''

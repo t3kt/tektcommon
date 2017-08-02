@@ -3,3 +3,4 @@ CrashAutoSave.toe
 *.dmp
 core-tester-output-*
 *TEMP*
+*.pyc
