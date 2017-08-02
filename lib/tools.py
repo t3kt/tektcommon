@@ -197,6 +197,32 @@ def WipeAndReclone():
 				x.destroy()
 			o.par.enablecloningpulse.pulse()
 
+def _makeCloneMasterSafe(o):
+	if not hasattr(o.par, 'clone'):
+		return False
+	clone = o.par.clone
+	if o.python:
+		if clone.mode != ParMode.CONSTANT:
+			return False
+		path = clone.val
+		if not path:
+			return False
+		clone.expr = 'op({0!r}) or {0!r}'.format(path)
+		return True
+	else:
+		path = clone.val
+		if not path:
+			return False
+		if path.startswith('`') or path.endswith('`'):
+			return False
+		clone.val = '`ifs(opexists({0!r}), {0!r}, "")`'.format(path)
+		return True
+
+def MakeCloneMasterSafe():
+	selected = _getSelected()
+	for o in selected:
+		_makeCloneMasterSafe(o)
+
 def _getMiddle(vals):
 	low, high = min(vals), max(vals)
 	return low + (high - low) / 2
@@ -287,9 +313,48 @@ def ApplyAutoHeight(comp):
 	else:
 		comp.par.h.expr = "par(opparent('.', 0) + '/panelh')"
 
+class Action:
+	def __init__(self, key, label, action):
+		self.key = key
+		self.label = label
+		self.action = action
+
 class ToolsExt(base.Extension):
 	def __init__(self, comp):
 		super().__init__(comp)
+		self.Actions = [
+			Action('reloadcode', 'Reload code', self.ReloadCode),
+			Action('reloadconfig', 'Reload config', self.ReloadConfig),
+			Action('copypaths', 'Copy paths', CopySelectedPaths),
+			Action(
+				'savetox', 'Save TOX',
+				lambda: comp.op('./do_save_tox').run(0, delayFrames=1)),
+			Action(
+				'saveancestors', 'Save TOX+ancestors',
+				lambda: comp.op('./do_save_tox').run(1, delayFrames=1)),
+			Action('reclone', 'Wipe and reclone', WipeAndReclone),
+			Action('makesafeclone', 'Make master safe', MakeCloneMasterSafe),
+		]
+
+	def BuildActionTable(self, dat):
+		dat.clear()
+		dat.appendRow(['label', 'key'])
+		for action in self.Actions:
+			dat.appendRow([action.label, action.key])
+
+	def PerformAction(self, index=None, key=None):
+		if key:
+			for action in self.Actions:
+				if action.key == key:
+					action.action()
+			raise Exception('PerformAction(): unsupported action {0!r}'.format(key))
+		elif index is not None:
+			if 0 <= index < len(self.Actions):
+				self.Actions[index].action()
+			else:
+				raise Exception('PerformAction(): unsupported action [{0!r}]'.format(index))
+		else:
+			raise Exception('PerformAction(): must provide either index or key')
 
 	def ReloadCode(self):
 		patterns = self.comp.par.Codeops.eval().split(' ')
