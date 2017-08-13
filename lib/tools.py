@@ -207,7 +207,7 @@ def _makeCloneMasterSafe(o):
 		path = clone.val
 		if not path:
 			return False
-		clone.expr = 'op({0!r}) or {0!r}'.format(path)
+		clone.expr = 'op({0!r}) or ""'.format(path)
 		return True
 	else:
 		path = clone.val
