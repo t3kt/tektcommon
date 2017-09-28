@@ -79,10 +79,12 @@ class Settings(base.Extension):
 		util.CopyParPagesToTable(dat, *self.comp.customPages, quotestrings=True)
 
 	@staticmethod
-	def FillExportTable(dat, paramtable, exportpath):
+	def FillExportTable(dat, paramtable, exportpath, excludenames=None):
 		dat.clear()
 		dat.appendRow(['path', 'parameter', 'value'])
 		for name, val in paramtable.rows():
+			if excludenames and name in excludenames:
+				continue
 			dat.appendRow([exportpath, name.val.lower(), val])
 
 class ControlBase(base.Extension):
