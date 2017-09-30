@@ -27,13 +27,19 @@ class OutputRecorderExt:
 	@property
 	def NextFileName(self):
 		base = self.BaseFileName
+		path = self.comp.par.Folder.eval()
+		if path:
+			base = os.path.join(path.replace('/', os.path.sep), base)
 		base += '-' + str(datetime.date.today()) + '-'
 		files = glob.glob(base + '*')
 		if len(files) == 0:
 			i = 1
 		else:
 			i = max([_getIndex(base, f) for f in files]) + 1
-		return base + str(i) + self._FileNameSuffix
+		# print(self.comp.path + '--ZZZ base: {!r} considering files: {!r}, next index: {}'.format(base, files, i))
+		# for _F in files:
+		# 	print('  [{}]: {}'.format(_F, _getIndex(base, _F)))
+		return base.replace(os.path.sep, '/') + str(i) + self._FileNameSuffix
 
 	@property
 	def _ResolutionSuffix(self):
@@ -65,11 +71,7 @@ class OutputRecorderExt:
 
 	@property
 	def NextFileFullPath(self):
-		name = self.NextFileName
-		path = self.comp.par.Folder.eval()
-		if not path:
-			return name
-		return os.path.join(path, name).replace(os.path.sep, '/')
+		return self.NextFileName
 
 	def CaptureImage(self):
 		f = self.NextFileFullPath + '.' + self.comp.par.Imageext
