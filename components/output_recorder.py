@@ -30,13 +30,38 @@ class OutputRecorderExt:
 		base += '-' + str(datetime.date.today()) + '-'
 		files = glob.glob(base + '*')
 		if len(files) == 0:
-			return base + '1'
-		i = max([_getIndex(f) for f in files]) + 1
-		f = base + str(i)
-		suffix = self.comp.par.Suffix.eval()
-		if suffix:
-			f += '-' + suffix
-		return f
+			i = 1
+		else:
+			i = max([_getIndex(base, f) for f in files]) + 1
+		return base + str(i) + self._FileNameSuffix
+
+	@property
+	def _ResolutionSuffix(self):
+		if self.comp.par.Useinputres:
+			video = self.comp.op('./video')
+			w, h = video.width, video.height
+		else:
+			w, h = self.comp.par.Resolution1.eval(), self.comp.par.Resolution2.eval()
+		return '{}x{}'.format(w, h)
+
+	@property
+	def _VideoCodecSuffix(self):
+		vcodec = self.comp.par.Videocodec.eval()
+		suffix = self.comp.op('./video_codecs')[vcodec, 'suffix']
+		return suffix.val if suffix and suffix.val else vcodec
+
+	@property
+	def _FileNameSuffix(self):
+		parts = []
+		if self.comp.par.Suffix:
+			parts.append(self.comp.par.Suffix.eval())
+		if self.comp.par.Addvcodecsfx:
+			parts.append(self._VideoCodecSuffix)
+		if self.comp.par.Addacodecsfx:
+			parts.append(self.comp.par.Audiocodec.eval())
+		if self.comp.par.Addresolutionsfx:
+			parts.append(self._ResolutionSuffix)
+		return ('-' + '-'.join(parts)) if parts else ''
 
 	@property
 	def NextFileFullPath(self):
@@ -44,9 +69,7 @@ class OutputRecorderExt:
 		path = self.comp.par.Folder.eval()
 		if not path:
 			return name
-		if not path.endswith('/'):
-			path += '/'
-		return path + name
+		return os.path.join(path, name).replace(os.path.sep, '/')
 
 	def CaptureImage(self):
 		f = self.NextFileFullPath + '.' + self.comp.par.Imageext
@@ -83,6 +106,10 @@ class OutputRecorderExt:
 		if self.comp.par.Autoheight:
 			self.comp.par.h = max(util.GetVisibleChildCOMPsHeight(self.comp.op('root_panel')), 20)
 
-def _getIndex(f):
-	return int(re.match(r'.+-([0-9]+)(-.+)?\.[0-9a-z]+', f).group(1))
+def _getIndex(base, f):
+	if not f.startswith(base):
+		return 0
+	f = f[len(base):]
+	r = re.match(r'([0-9]+)[^0-9]+', f)
+	return int(r.group(1)) if r else 0
 
